@@ -1,0 +1,44 @@
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser'); // Adicionado
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+// Configuração do EJS como view engine
+app.set('view engine', 'ejs');
+
+// Configuração do body-parser
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// Configuração do cookie-parser
+app.use(cookieParser()); // Adicionado
+
+// Configuração da pasta para arquivos estáticos
+app.use(express.static(__dirname + '/public'));
+
+// Rota principal
+app.get('/', (req, res) => {
+  // Exemplo de leitura de cookie
+  const username = req.cookies.username || 'Visitante';
+  res.render('index', { username });
+});
+
+// Configuração do Socket.IO
+io.on('connection', (socket) => {
+  console.log('Um usuário se conectou');
+
+  socket.on('disconnect', () => {
+    console.log('Usuário desconectado');
+  });
+});
+
+// Iniciar o servidor
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
